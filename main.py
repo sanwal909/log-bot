@@ -484,10 +484,24 @@ class PellaMultiAutomation:
 
                 return True
             else:
-                logging.error(f"❌ [{account.account_name}] Failed to start server: {response.status_code} - {response.text}")
+                error_msg = f"❌ [{account.account_name}] Failed to start server: {response.status_code}"
+                logging.error(error_msg)
+                
+                if account.telegram_chat_id:
+                    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    telegram_msg = f"❌ <b>START FAILED - {account.account_name}</b>\n\n⏰ Time: {current_time}\n🆔 Server: {account.server_id}\n❌ Error: HTTP {response.status_code}\n📝 {response.text[:100]}"
+                    self.send_telegram_message(telegram_msg, account.telegram_chat_id)
+                
                 return False
         else:
-            logging.error(f"❌ [{account.account_name}] No response from start server request")
+            error_msg = f"❌ [{account.account_name}] No response from start server request"
+            logging.error(error_msg)
+            
+            if account.telegram_chat_id:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                telegram_msg = f"❌ <b>START FAILED - {account.account_name}</b>\n\n⏰ Time: {current_time}\n🆔 Server: {account.server_id}\n❌ Error: No response from server"
+                self.send_telegram_message(telegram_msg, account.telegram_chat_id)
+            
             return False
 
     def stop_server(self, account):
@@ -513,10 +527,24 @@ class PellaMultiAutomation:
 
                 return True
             else:
-                logging.error(f"❌ [{account.account_name}] Failed to stop server: {response.status_code} - {response.text}")
+                error_msg = f"❌ [{account.account_name}] Failed to stop server: {response.status_code}"
+                logging.error(error_msg)
+                
+                if account.telegram_chat_id:
+                    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    telegram_msg = f"❌ <b>STOP FAILED - {account.account_name}</b>\n\n⏰ Time: {current_time}\n🆔 Server: {account.server_id}\n❌ Error: HTTP {response.status_code}"
+                    self.send_telegram_message(telegram_msg, account.telegram_chat_id)
+                
                 return False
         else:
-            logging.error(f"❌ [{account.account_name}] No response from stop server request")
+            error_msg = f"❌ [{account.account_name}] No response from stop server request"
+            logging.error(error_msg)
+            
+            if account.telegram_chat_id:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                telegram_msg = f"❌ <b>STOP FAILED - {account.account_name}</b>\n\n⏰ Time: {current_time}\n🆔 Server: {account.server_id}\n❌ Error: No response from server"
+                self.send_telegram_message(telegram_msg, account.telegram_chat_id)
+            
             return False
 
     def perform_restart_cycle_for_account(self, account):
@@ -525,13 +553,27 @@ class PellaMultiAutomation:
         account.current_token = None
 
         if not self.get_fresh_token(account):
-            logging.error(f"❌ [{account.account_name}] Cannot establish authentication session")
+            error_msg = f"❌ [{account.account_name}] Cannot establish authentication session"
+            logging.error(error_msg)
+            
+            if account.telegram_chat_id:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                telegram_msg = f"❌ <b>RESTART FAILED - {account.account_name}</b>\n\n⏰ Time: {current_time}\n❌ Error: Authentication Failed\n📝 Check email/password credentials"
+                self.send_telegram_message(telegram_msg, account.telegram_chat_id)
+            
             return False
 
         current_status = self.get_server_info(account)
 
         if current_status is None:
-            logging.error(f"❌ [{account.account_name}] Cannot determine server status")
+            error_msg = f"❌ [{account.account_name}] Cannot determine server status"
+            logging.error(error_msg)
+            
+            if account.telegram_chat_id:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                telegram_msg = f"❌ <b>RESTART FAILED - {account.account_name}</b>\n\n⏰ Time: {current_time}\n❌ Error: Cannot check server status"
+                self.send_telegram_message(telegram_msg, account.telegram_chat_id)
+            
             return False
 
         logging.info(f"📊 [{account.account_name}] Current server status: {current_status}")
@@ -561,7 +603,14 @@ class PellaMultiAutomation:
 
                 return True
             else:
-                logging.error(f"❌ [{account.account_name}] Server may not have started properly. Current status: {new_status}")
+                error_msg = f"❌ [{account.account_name}] Server may not have started properly. Current status: {new_status}"
+                logging.error(error_msg)
+                
+                if account.telegram_chat_id:
+                    final_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    error_message = f"⚠️ <b>{account.account_name} - Status Check</b>\n\n⏰ Time: {final_time}\n⚠️ Server status: {new_status}\n📝 May still be starting, please check manually"
+                    self.send_telegram_message(error_message, account.telegram_chat_id)
+                
                 return False
         else:
             logging.error(f"❌ [{account.account_name}] Failed to start server")
